@@ -1,13 +1,14 @@
 package com.example.chatting;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
 import android.view.MenuItem;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.chatting.fragment.AccountFragment;
 import com.example.chatting.fragment.ChatFragment;
+import com.example.chatting.fragment.FriendFragment;
 import com.example.chatting.fragment.PeopleFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -37,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.action_account:
                         getSupportFragmentManager().beginTransaction().replace(R.id.mainactivity_framelayout,new AccountFragment()).commit();
                         return true;
+                    case R.id.action_friend:
+                        getSupportFragmentManager().beginTransaction().replace(R.id.mainactivity_framelayout,new FriendFragment()).commit();
                 }
                 return false;
             }

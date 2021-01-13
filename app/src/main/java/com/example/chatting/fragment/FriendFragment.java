@@ -1,66 +1,147 @@
 package com.example.chatting.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.chatting.R;
+import com.example.chatting.chat.MessageActivity;
+import com.example.chatting.model.FriendModel;
+import com.example.chatting.model.UserModel;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link FriendFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import java.util.ArrayList;
+import java.util.List;
+
+
 public class FriendFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public FriendFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment FriendFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static FriendFragment newInstance(String param1, String param2) {
-        FriendFragment fragment = new FriendFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
+    @Nullable
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_friend,container,false);
+        RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.friendfragment_recyclerview);
+        recyclerView.setLayoutManager(new LinearLayoutManager(inflater.getContext()));
+        recyclerView.setAdapter(new FriendFragment.FriendFragmentRecyclerViewAdapter());
+
+        FloatingActionButton floatingActionButton = (FloatingActionButton)view.findViewById(R.id.friendfragment_floatingButton);
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                startActivity(new Intent(view.getContext(),SelectFriendActivity.class));
+            }
+        });
+        return view;
+
+    }
+    class FriendFragmentRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
+        List<FriendModel> friendModels;
+        UserModel userModels;
+        String myUid=FirebaseAuth.getInstance().getCurrentUser().getUid();
+        //아이디가 추가되면 리사이클러뷰에 view아답터 형식으로 아이디 추가하고 새로고침
+        public FriendFragmentRecyclerViewAdapter() {
+            friendModels= new ArrayList<>();
+            FirebaseDatabase.getInstance().getReference().child("friends").child(myUid).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    friendModels.clear();
+
+                    final String myUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                    for(DataSnapshot snapshot :dataSnapshot.getChildren()){
+
+                        FriendModel friendModel =  snapshot.getValue(FriendModel.class);
+
+
+
+                        friendModels.add(friendModel);
+                    }
+                    notifyDataSetChanged();//새로고침
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
         }
-    }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_friend, container, false);
+        @NonNull
+        @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_friend_list,parent,false);
+            return new FriendFragment.FriendFragmentRecyclerViewAdapter.CustomViewHolder(view);
+        }
+
+
+        @Override
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+            FirebaseDatabase.getInstance().getReference().child("users").child(friendModels.get(position).friendUid).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    userModels = snapshot.getValue(UserModel.class);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+            //이미지랑 유저이름 넣기
+            Glide.with
+                    (holder.itemView.getContext())
+                    //이미지넣기
+                    .load(userModels.profileImageUrl)
+                    .apply(new RequestOptions().circleCrop())
+                    .into(((FriendFragment.FriendFragmentRecyclerViewAdapter.CustomViewHolder)holder).imageView);
+            ((FriendFragment.FriendFragmentRecyclerViewAdapter.CustomViewHolder)holder).textView.setText(userModels.userName);
+            if(userModels.comment!=null){
+                ((FriendFragment.FriendFragmentRecyclerViewAdapter.CustomViewHolder)holder).textView_comment.setText(userModels.comment);
+            }
+
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(view.getContext(), MessageActivity.class);
+                    intent.putExtra("destinationUid",friendModels.get(position).friendUid);
+                    startActivity(intent);
+                }
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return friendModels.size();
+        }
+        private class CustomViewHolder extends RecyclerView.ViewHolder {
+            public ImageView imageView;
+            public TextView textView;
+            public TextView textView_comment;
+
+            public CustomViewHolder(View view) {
+                super(view);
+                imageView=(ImageView) view.findViewById(R.id.friendlistitem_imageview);
+                textView=(TextView) view.findViewById(R.id.friendlistitem_textview);
+                textView_comment = (TextView)view.findViewById(R.id.friendlistitem_textview_comment);
+
+            }
+        }
     }
 }

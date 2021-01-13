@@ -1,10 +1,5 @@
 package com.example.chatting.chat;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -15,6 +10,11 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -34,9 +34,6 @@ import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 
-import org.jetbrains.annotations.NotNull;
-import org.w3c.dom.Text;
-
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -45,7 +42,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
-import java.util.logging.Level;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -60,6 +56,7 @@ public class MessageActivity extends AppCompatActivity {
     private String destinationUid;
     private Button button;
     private EditText editText;
+
 
     private String uid;
     private String chatRoomUid;
@@ -104,6 +101,7 @@ public class MessageActivity extends AppCompatActivity {
                     comment.uid= uid;
                     comment.message = editText.getText().toString();
                     comment.timestamp = ServerValue.TIMESTAMP;
+
                     FirebaseDatabase.getInstance().getReference().child("chatrooms").child(chatRoomUid).child("comments").push().setValue(comment).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
@@ -214,18 +212,20 @@ public class MessageActivity extends AppCompatActivity {
                         comments.add(comment_origin);
 
                     }
-                    if(!comments.get(comments.size()-1).readUsers.containsKey(uid)) {
-                        FirebaseDatabase.getInstance().getReference().child("chatrooms")
-                                .child(chatRoomUid).child("comments").updateChildren(readUsersMap)
-                                .addOnCompleteListener((task) -> {
-                                    notifyDataSetChanged();
-                                    recyclerView.scrollToPosition(comments.size() - 1);
+                    if(comments.size()>0) {
+                        if (!comments.get(comments.size() - 1).readUsers.containsKey(uid)) {
+                            FirebaseDatabase.getInstance().getReference().child("chatrooms")
+                                    .child(chatRoomUid).child("comments").updateChildren(readUsersMap)
+                                    .addOnCompleteListener((task) -> {
+                                        notifyDataSetChanged();
+                                        recyclerView.scrollToPosition(comments.size() - 1);
 
 
-                                });
-                    }else{
-                        notifyDataSetChanged();
-                        recyclerView.scrollToPosition(comments.size()-1);
+                                    });
+                        } else {
+                            notifyDataSetChanged();
+                            recyclerView.scrollToPosition(comments.size() - 1);
+                        }
                     }
                     //메세지가 갱신
 

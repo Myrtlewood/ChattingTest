@@ -12,11 +12,11 @@
         android:orientation="horizontal">
     <ImageView
         android:layout_margin="10dp"
-        android:id="@+id/frienditem_imageview"
+        android:id="@+id/friendlistitem_imageview"
         android:layout_width="50dp"
         android:layout_height="50dp"/>
     <TextView
-        android:id="@+id/frienditem_textview"
+        android:id="@+id/friendlistitem_textview"
         android:text="아이디"
         android:layout_gravity="center_vertical"
         android:layout_marginLeft="10dp"
@@ -33,7 +33,7 @@
             android:layout_height="match_parent">
             <TextView
                 android:layout_margin="10dp"
-                android:id="@+id/frienditem_textview_comment"
+                android:id="@+id/friendlistitem_textview_comment"
                 android:text="상태 메세지"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>

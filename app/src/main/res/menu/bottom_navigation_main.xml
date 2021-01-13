@@ -4,7 +4,10 @@
         android:id="@+id/action_people"
         android:icon="@drawable/ic_people_black_24dp"
         android:title="people"/>
-
+    <item
+        android:id="@+id/action_friend"
+        android:icon="@drawable/ic_people_black_24dp"
+        android:title="friend"/>
     <item
         android:id="@+id/action_chat"
         android:icon="@drawable/ic_chat_black_24dp"

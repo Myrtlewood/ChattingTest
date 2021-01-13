@@ -1,13 +1,13 @@
 package com.example.chatting.fragment;
 
 import android.content.Intent;
-import android.media.Image;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.chatting.R;
-import com.example.chatting.chat.MessageActivity;
+import com.example.chatting.model.FriendModel;
 import com.example.chatting.model.UserModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
@@ -53,7 +53,6 @@ public class PeopleFragment extends Fragment {
     }
     class PeopleFragmentRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
         List<UserModel> userModels;
-
         //아이디가 추가되면 리사이클러뷰에 view아답터 형식으로 아이디 추가하고 새로고침
         public PeopleFragmentRecyclerViewAdapter() {
             userModels= new ArrayList<>();
@@ -86,7 +85,7 @@ public class PeopleFragment extends Fragment {
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_friend,parent,false);
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_user,parent,false);
             return new CustomViewHolder(view);
         }
 
@@ -103,15 +102,48 @@ public class PeopleFragment extends Fragment {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Intent intent = new Intent(view.getContext(), MessageActivity.class);
-                    intent.putExtra("destinationUid",userModels.get(position).uid);
-                    startActivity(intent);
+                    ///이미 추가한 회원이면
+                    List<FriendModel> friendModels = new ArrayList<>();
+                    String myUid=FirebaseAuth.getInstance().getCurrentUser().getUid();
+                    FirebaseDatabase.getInstance().getReference().child("friends").child(myUid).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            friendModels.clear();
+
+
+                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                FriendModel friendModel = snapshot.getValue(FriendModel.class);
+                                if(friendModel.friendUid.equals(userModels.get(position).uid)){
+                                    Toast.makeText(getContext(), "이미 추가한 회원입니다", Toast.LENGTH_SHORT).show();
+                                    break;
+                                 }
+                                else{
+                                    friendModel.friendUid=userModels.get(position).uid;
+                                    FirebaseDatabase.getInstance().getReference().child("friends").child(myUid).child(userModels.get(position).uid).setValue(friendModel);
+                                    Toast.makeText(getContext(), "이미 추가한 회원입니다", Toast.LENGTH_SHORT).show();
+                                }
+
+
+                            }
+                        }
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                        }
+                    });
+
+
+
+
+                   // Intent intent = new Intent(view.getContext(), MessageActivity.class);
+                   // intent.putExtra("destinationUid",userModels.get(position).uid);
+                   // startActivity(intent);
                 }
             });
             if(userModels.get(position).comment!=null){
                 ((CustomViewHolder)holder).textView_comment.setText(userModels.get(position).comment);
             }
         }
+        //친구 중복 체크
 
         @Override
         public int getItemCount() {
@@ -124,9 +156,9 @@ public class PeopleFragment extends Fragment {
 
             public CustomViewHolder(View view) {
                 super(view);
-                imageView=(ImageView) view.findViewById(R.id.frienditem_imageview);
-                textView=(TextView) view.findViewById(R.id.frienditem_textview);
-                textView_comment = (TextView)view.findViewById(R.id.frienditem_textview_comment);
+                imageView=(ImageView) view.findViewById(R.id.user_imageview);
+                textView=(TextView) view.findViewById(R.id.user_textview);
+                textView_comment = (TextView)view.findViewById(R.id.user_textview_comment);
 
             }
         }
