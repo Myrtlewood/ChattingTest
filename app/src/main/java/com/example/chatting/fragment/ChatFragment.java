@@ -60,14 +60,16 @@ public class ChatFragment extends Fragment {
             myUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
             //내가 속해있는 모든방의 유저목록과 채팅목록은 chatModels에
             //내가 속한 모든 방이름을 keys에 담음
-            FirebaseDatabase.getInstance().getReference().child("chatrooms").orderByChild("users/"+myUid).addListenerForSingleValueEvent(new ValueEventListener() {
+            FirebaseDatabase.getInstance().getReference().child("chatrooms").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     chatModels.clear();
-                    for(DataSnapshot item : dataSnapshot.getChildren()){
-                       //유저목록과
-                        chatModels.add(item.getValue(ChatModel.class));
-                        keys.add(item.getKey());
+                    for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+
+                        if(snapshot.getValue(ChatModel.class).users.containsKey(myUid)) {
+                            chatModels.add(snapshot.getValue(ChatModel.class));
+                            keys.add(snapshot.getKey());
+                        }
                     }
                     notifyDataSetChanged();
                 }
@@ -92,7 +94,7 @@ public class ChatFragment extends Fragment {
             CustomViewHolder customViewHolder = (CustomViewHolder)holder;
             String destinationUid = null;
 
-            //1대1 채팅방에서 상대방의 Uid를 가져옴
+
             for(String user : chatModels.get(position).users.keySet()){
                 if(!user.equals(myUid)){
                     destinationUid = user;

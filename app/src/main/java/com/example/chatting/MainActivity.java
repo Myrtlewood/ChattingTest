@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         BottomNavigationView bottomNavigationView =(BottomNavigationView) findViewById(R.id.mainactivity_bottomnavigationview);
+        getSupportFragmentManager().beginTransaction().replace(R.id.mainactivity_framelayout,new FriendFragment()).commit();
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -40,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
                         return true;
                     case R.id.action_friend:
                         getSupportFragmentManager().beginTransaction().replace(R.id.mainactivity_framelayout,new FriendFragment()).commit();
+                        return true;
                 }
                 return false;
             }
