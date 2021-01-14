@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.chatting.MainActivity;
 import com.example.chatting.R;
 import com.example.chatting.chat.MessageActivity;
 import com.example.chatting.model.ChatModel;
@@ -34,6 +35,7 @@ import java.util.List;
 
 public class SelectFriendActivity extends AppCompatActivity {
 ChatModel chatModel = new ChatModel();
+Button button;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,13 +44,15 @@ ChatModel chatModel = new ChatModel();
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.selectFriendActivity_recyclerview);
         recyclerView.setAdapter(new SelectFriendRecyclerViewAdapter());
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        Button button = (Button) findViewById(R.id.selectFriendActivity_button);
+        button = (Button) findViewById(R.id.selectFriendActivity_button);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View view) {
                 String myUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
                 chatModel.users.put(myUid,true);
                 FirebaseDatabase.getInstance().getReference().child("chatrooms").push().setValue(chatModel);
+                Intent intent = new Intent(view.getContext(), MainActivity.class);
+                startActivity(intent);
             }
         });
     }
@@ -119,6 +123,7 @@ ChatModel chatModel = new ChatModel();
                     }
                 });
             }
+
 
 
 
