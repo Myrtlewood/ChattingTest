@@ -1,6 +1,5 @@
 package com.example.chatting.fragment;
 
-import android.app.ActivityOptions;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -54,16 +53,19 @@ public class ChatFragment extends Fragment {
     class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
         private List<ChatModel> chatModels = new ArrayList<>();
         private List<String> keys = new ArrayList<>();
-        private String uid;
+        private String myUid;
         private ArrayList<String> destinationUsers = new ArrayList<>();
 
         public ChatRecyclerViewAdapter() {
-            uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            FirebaseDatabase.getInstance().getReference().child("chatrooms").orderByChild("users/"+uid).addListenerForSingleValueEvent(new ValueEventListener() {
+            myUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            //내가 속해있는 모든방의 유저목록과 채팅목록은 chatModels에
+            //내가 속한 모든 방이름을 keys에 담음
+            FirebaseDatabase.getInstance().getReference().child("chatrooms").orderByChild("users/"+myUid).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     chatModels.clear();
                     for(DataSnapshot item : dataSnapshot.getChildren()){
+                       //유저목록과
                         chatModels.add(item.getValue(ChatModel.class));
                         keys.add(item.getKey());
                     }
@@ -90,9 +92,9 @@ public class ChatFragment extends Fragment {
             CustomViewHolder customViewHolder = (CustomViewHolder)holder;
             String destinationUid = null;
 
-            //채팅방에 있는 유저 체크
+            //1대1 채팅방에서 상대방의 Uid를 가져옴
             for(String user : chatModels.get(position).users.keySet()){
-                if(!user.equals(uid)){
+                if(!user.equals(myUid)){
                     destinationUid = user;
                     destinationUsers.add(destinationUid);
                 }
@@ -106,7 +108,28 @@ public class ChatFragment extends Fragment {
                             .apply(new RequestOptions().circleCrop())
                             .into(customViewHolder.imageView);
 
-                    customViewHolder.textView_title.setText(userModel.userName);
+                   for(String user : chatModels.get(position).users.keySet()){
+                       if(!myUid.equals(user)) {
+                           FirebaseDatabase.getInstance().getReference().child("users").child(user).addListenerForSingleValueEvent(new ValueEventListener() {
+                               @Override
+                               public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                                   UserModel userModel = snapshot.getValue(UserModel.class);
+                                   customViewHolder.textView_title.append(",");
+                                   customViewHolder.textView_title.append(userModel.userName);
+                               }
+
+                               @Override
+                               public void onCancelled(@NonNull DatabaseError error) {
+
+                               }
+                           });
+                       }
+                   }
+
+                    if(chatModels.get(position).users.size()>2) {
+                        customViewHolder.textView_count.setText(" "+chatModels.get(position).users.size()+"명");
+                    }
                 }
 
                 @Override
@@ -114,6 +137,8 @@ public class ChatFragment extends Fragment {
 
                 }
             });
+
+
             //메세지를 내림차순으로 정렬후 마지막 메세지의 키값을 가져옴
             Map<String,ChatModel.Comment> commentMap = new TreeMap<>(Collections.reverseOrder());
             commentMap.putAll(chatModels.get(position).comments);
@@ -155,13 +180,16 @@ public class ChatFragment extends Fragment {
         private class CustomViewHolder extends RecyclerView.ViewHolder {
             public ImageView imageView;
             public TextView textView_title;
+            public TextView textView_count;
             public TextView textView_last_message;
             public TextView textView_timestamp;
+
             public CustomViewHolder(View view) {
                 super(view);
 
                 imageView = (ImageView) view.findViewById(R.id.chatitem_imageview);
                 textView_title = (TextView) view.findViewById(R.id.chatitem_textview_title);
+                textView_count  = (TextView)view.findViewById(R.id.chatitem_textview_count);
                 textView_last_message = (TextView)view.findViewById(R.id.chatitem_textview_lastMessage);
                 textView_timestamp = (TextView)view.findViewById(R.id.chatitem_textview_timestamp);
             }

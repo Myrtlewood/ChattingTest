@@ -94,24 +94,24 @@ public class FriendFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-            final UserModel[] userModel = new UserModel[1];
+
             if(friendModels.size()>0) {
                 FirebaseDatabase.getInstance().getReference().child("users").child(friendModels.get(position).friendUid).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
-                            userModel[0] = dataSnapshot.getValue(UserModel.class);
+                            UserModel userModel = dataSnapshot.getValue(UserModel.class);
                             Glide.with
                                     (holder.itemView.getContext())
                                     //이미지넣기
-                                    .load(userModel[0].profileImageUrl.toString())
+                                    .load(userModel.profileImageUrl.toString())
                                     .apply(new RequestOptions().circleCrop())
                                     .into(((FriendFragment.FriendFragmentRecyclerViewAdapter.CustomViewHolder) holder).imageView);
                             //유저이름 넣기
-                            ((FriendFragment.FriendFragmentRecyclerViewAdapter.CustomViewHolder) holder).textView.setText(userModel[0].userName);
+                            ((FriendFragment.FriendFragmentRecyclerViewAdapter.CustomViewHolder) holder).textView.setText(userModel.userName);
                             //상태메세지 넣기
-                            if (userModel[0].comment != null) {
-                                ((FriendFragment.FriendFragmentRecyclerViewAdapter.CustomViewHolder) holder).textView_comment.setText(userModel[0].comment);
+                            if (userModel.comment != null) {
+                                ((FriendFragment.FriendFragmentRecyclerViewAdapter.CustomViewHolder) holder).textView_comment.setText(userModel.comment);
                             }
                         }
 

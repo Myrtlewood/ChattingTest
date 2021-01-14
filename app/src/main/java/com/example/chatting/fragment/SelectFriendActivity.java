@@ -1,10 +1,5 @@
 package com.example.chatting.fragment;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -16,11 +11,17 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.chatting.R;
 import com.example.chatting.chat.MessageActivity;
 import com.example.chatting.model.ChatModel;
+import com.example.chatting.model.FriendModel;
 import com.example.chatting.model.UserModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -54,26 +55,19 @@ ChatModel chatModel = new ChatModel();
 
 
     class SelectFriendRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-
-        List<UserModel> userModels;
+        List<FriendModel> friendModels;
 
         public SelectFriendRecyclerViewAdapter() {
-            userModels = new ArrayList<>();
+            friendModels = new ArrayList<>();
             final String myUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            FirebaseDatabase.getInstance().getReference().child("users").addValueEventListener(new ValueEventListener() {
+            FirebaseDatabase.getInstance().getReference().child("friends").child(myUid).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    userModels.clear();
+                    friendModels.clear();
 
                     for(DataSnapshot snapshot :dataSnapshot.getChildren()){
-
-
-                        UserModel userModel = snapshot.getValue(UserModel.class);
-
-                        if(userModel.uid.equals(myUid)){
-                            continue;
-                        }
-                        userModels.add(userModel);
+                        FriendModel friendModel = snapshot.getValue(FriendModel.class);
+                        friendModels.add(friendModel);
                     }
                     notifyDataSetChanged();
 
@@ -99,34 +93,53 @@ ChatModel chatModel = new ChatModel();
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
 
+            String myUid=FirebaseAuth.getInstance().getCurrentUser().getUid();
+            if(friendModels.size()>0) {
+                FirebaseDatabase.getInstance().getReference().child("users").child(friendModels.get(position).friendUid).addValueEventListener(new ValueEventListener() {
 
-            Glide.with
-                    (holder.itemView.getContext())
-                    .load(userModels.get(position).profileImageUrl)
-                    .apply(new RequestOptions().circleCrop())
-                    .into(((CustomViewHolder)holder).imageView);
-            ((CustomViewHolder)holder).textView.setText(userModels.get(position).userName);
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if(dataSnapshot.exists()){
+                           UserModel userModel = dataSnapshot.getValue(UserModel.class);
+                            Glide.with
+                                    (holder.itemView.getContext())
+                                    .load(userModel.profileImageUrl)
+                                    .apply(new RequestOptions().circleCrop())
+                                    .into(((CustomViewHolder)holder).imageView);
+                            ((CustomViewHolder)holder).textView.setText(userModel.userName);
+                            if(userModel.comment != null){
+                                ((CustomViewHolder) holder).textView_comment.setText(userModel.comment);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+            }
+
+
 
 
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(view.getContext(), MessageActivity.class);
-                    intent.putExtra("destinationUid",userModels.get(position).uid);
+                    intent.putExtra("destinationUid",friendModels.get(position).friendUid);
                 }
             });
 
-            if(userModels.get(position).comment != null){
-                ((CustomViewHolder) holder).textView_comment.setText(userModels.get(position).comment);
-            }
+
             ((CustomViewHolder) holder).checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     if(isChecked){//체크된상태
-                        chatModel.users.put(userModels.get(position).uid,true);
+                        chatModel.users.put(friendModels.get(position).friendUid,true);
                     }
                     else{//체크 취소 상태
-                        chatModel.users.remove(userModels.get(position));
+                        chatModel.users.remove(friendModels.get(position));
                     }
                 }
             });
@@ -134,7 +147,7 @@ ChatModel chatModel = new ChatModel();
 
         @Override
         public int getItemCount() {
-            return userModels.size();
+            return friendModels.size();
         }
 
         private class CustomViewHolder extends RecyclerView.ViewHolder {

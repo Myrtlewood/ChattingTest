@@ -1,10 +1,5 @@
 package com.example.chatting.chat;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -15,6 +10,11 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -34,7 +34,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -195,18 +194,20 @@ public class GroupMessageActivity extends AppCompatActivity {
                         comments.add(comment_origin);
 
                     }
-                    if(!comments.get(comments.size()-1).readUsers.containsKey(uid)) {
-                        FirebaseDatabase.getInstance().getReference().child("chatrooms")
-                                .child(destinationRoom).child("comments").updateChildren(readUsersMap)
-                                .addOnCompleteListener((task) -> {
-                                    notifyDataSetChanged();
-                                    recyclerView.scrollToPosition(comments.size() - 1);
+                    if(comments.size()>0) {
+                        if (!comments.get(comments.size() - 1).readUsers.containsKey(uid)) {
+                            FirebaseDatabase.getInstance().getReference().child("chatrooms")
+                                    .child(destinationRoom).child("comments").updateChildren(readUsersMap)
+                                    .addOnCompleteListener((task) -> {
+                                        notifyDataSetChanged();
+                                        recyclerView.scrollToPosition(comments.size() - 1);
 
 
-                                });
-                    }else{
-                        notifyDataSetChanged();
-                        recyclerView.scrollToPosition(comments.size()-1);
+                                    });
+                        } else {
+                            notifyDataSetChanged();
+                            recyclerView.scrollToPosition(comments.size() - 1);
+                        }
                     }
                     //메세지가 갱신
 
