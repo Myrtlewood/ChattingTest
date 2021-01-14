@@ -54,11 +54,14 @@ public class FriendFragment extends Fragment {
     }
     class FriendFragmentRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
         List<FriendModel> friendModels;
-        UserModel userModels;
+
+
         String myUid=FirebaseAuth.getInstance().getCurrentUser().getUid();
         //아이디가 추가되면 리사이클러뷰에 view아답터 형식으로 아이디 추가하고 새로고침
+
         public FriendFragmentRecyclerViewAdapter() {
             friendModels= new ArrayList<>();
+
             FirebaseDatabase.getInstance().getReference().child("friends").child(myUid).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -68,8 +71,6 @@ public class FriendFragment extends Fragment {
                     for(DataSnapshot snapshot :dataSnapshot.getChildren()){
 
                         FriendModel friendModel =  snapshot.getValue(FriendModel.class);
-
-
 
                         friendModels.add(friendModel);
                     }
@@ -93,28 +94,40 @@ public class FriendFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-            FirebaseDatabase.getInstance().getReference().child("users").child(friendModels.get(position).friendUid).addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    userModels = snapshot.getValue(UserModel.class);
-                }
+            final UserModel[] userModel = new UserModel[1];
+            if(friendModels.size()>0) {
+                FirebaseDatabase.getInstance().getReference().child("users").child(friendModels.get(position).friendUid).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            userModel[0] = dataSnapshot.getValue(UserModel.class);
+                            Glide.with
+                                    (holder.itemView.getContext())
+                                    //이미지넣기
+                                    .load(userModel[0].profileImageUrl.toString())
+                                    .apply(new RequestOptions().circleCrop())
+                                    .into(((FriendFragment.FriendFragmentRecyclerViewAdapter.CustomViewHolder) holder).imageView);
+                            //유저이름 넣기
+                            ((FriendFragment.FriendFragmentRecyclerViewAdapter.CustomViewHolder) holder).textView.setText(userModel[0].userName);
+                            //상태메세지 넣기
+                            if (userModel[0].comment != null) {
+                                ((FriendFragment.FriendFragmentRecyclerViewAdapter.CustomViewHolder) holder).textView_comment.setText(userModel[0].comment);
+                            }
+                        }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
 
-                }
-            });
-            //이미지랑 유저이름 넣기
-            Glide.with
-                    (holder.itemView.getContext())
-                    //이미지넣기
-                    .load(userModels.profileImageUrl)
-                    .apply(new RequestOptions().circleCrop())
-                    .into(((FriendFragment.FriendFragmentRecyclerViewAdapter.CustomViewHolder)holder).imageView);
-            ((FriendFragment.FriendFragmentRecyclerViewAdapter.CustomViewHolder)holder).textView.setText(userModels.userName);
-            if(userModels.comment!=null){
-                ((FriendFragment.FriendFragmentRecyclerViewAdapter.CustomViewHolder)holder).textView_comment.setText(userModels.comment);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
             }
+
+
+            //이미지랑 유저이름 넣기
+
 
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

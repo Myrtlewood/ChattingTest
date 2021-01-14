@@ -56,6 +56,7 @@ public class PeopleFragment extends Fragment {
         //아이디가 추가되면 리사이클러뷰에 view아답터 형식으로 아이디 추가하고 새로고침
         public PeopleFragmentRecyclerViewAdapter() {
             userModels= new ArrayList<>();
+            //값을 뺴올떄 씀
             FirebaseDatabase.getInstance().getReference().child("users").addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -92,6 +93,8 @@ public class PeopleFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             //이미지 넣기
+
+
             Glide.with
                     (holder.itemView.getContext())
                     .load(userModels.get(position).profileImageUrl)
@@ -102,34 +105,36 @@ public class PeopleFragment extends Fragment {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+
                     ///이미 추가한 회원이면
-                    List<FriendModel> friendModels = new ArrayList<>();
                     String myUid=FirebaseAuth.getInstance().getCurrentUser().getUid();
-                    FirebaseDatabase.getInstance().getReference().child("friends").child(myUid).addValueEventListener(new ValueEventListener() {
+                    String friendUid=userModels.get(position).uid;
+                    FirebaseDatabase.getInstance().getReference().child("friends").child(myUid).child(friendUid).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            friendModels.clear();
-
-
-                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                FriendModel friendModel = snapshot.getValue(FriendModel.class);
-                                if(friendModel.friendUid.equals(userModels.get(position).uid)){
-                                    Toast.makeText(getContext(), "이미 추가한 회원입니다", Toast.LENGTH_SHORT).show();
-                                    break;
-                                 }
-                                else{
-                                    friendModel.friendUid=userModels.get(position).uid;
-                                    FirebaseDatabase.getInstance().getReference().child("friends").child(myUid).child(userModels.get(position).uid).setValue(friendModel);
-                                    Toast.makeText(getContext(), "이미 추가한 회원입니다", Toast.LENGTH_SHORT).show();
-                                }
-
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            //이미 친구추가된 회원이면
+                            if(snapshot.exists()){
+                                Toast.makeText(getContext(), " 이미추가된 회원", Toast.LENGTH_SHORT).show();
 
                             }
+                            //친구가 아니면
+                            else{
+                                FriendModel friendModel = new FriendModel();
+                                friendModel.friendUid=friendUid;
+                                FirebaseDatabase.getInstance().getReference().child("friends").child(myUid).child(userModels.get(position).uid).setValue(friendModel);
+                            }
                         }
+
                         @Override
                         public void onCancelled(@NonNull DatabaseError error) {
+
                         }
                     });
+
+
+
+
+
 
 
 
@@ -143,7 +148,7 @@ public class PeopleFragment extends Fragment {
                 ((CustomViewHolder)holder).textView_comment.setText(userModels.get(position).comment);
             }
         }
-        //친구 중복 체크
+
 
         @Override
         public int getItemCount() {
