@@ -17,9 +17,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.chatting.R;
-import com.example.chatting.chat.MessageActivity;
 import com.example.chatting.model.FriendModel;
 import com.example.chatting.model.UserModel;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -61,27 +62,39 @@ public class FriendFragment extends Fragment {
 
         public FriendFragmentRecyclerViewAdapter() {
             friendModels= new ArrayList<>();
+           Task<DataSnapshot> task = FirebaseDatabase.getInstance().getReference().child("friends").child(myUid).get();
+           task.addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+               @Override
+               public void onComplete(@NonNull Task<DataSnapshot> task) {
+                   DataSnapshot datasnapshot = task.getResult();
+               for(DataSnapshot snapshot:datasnapshot.getChildren()){
+                    FriendModel friendModel = snapshot.getValue(FriendModel.class);
 
-            FirebaseDatabase.getInstance().getReference().child("friends").child(myUid).addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    friendModels.clear();
-
-                    final String myUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                    for(DataSnapshot snapshot :dataSnapshot.getChildren()){
-
-                        FriendModel friendModel =  snapshot.getValue(FriendModel.class);
-
-                        friendModels.add(friendModel);
-                    }
-                    notifyDataSetChanged();//새로고침
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-
-                }
-            });
+                    friendModels.add(friendModel);
+               }
+               notifyDataSetChanged();
+               }
+           });
+//            FirebaseDatabase.getInstance().getReference().child("friends").child(myUid).addValueEventListener(new ValueEventListener() {
+//                @Override
+//                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                    friendModels.clear();
+//
+//                    final String myUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+//                    for(DataSnapshot snapshot :dataSnapshot.getChildren()){
+//
+//                        FriendModel friendModel =  snapshot.getValue(FriendModel.class);
+//
+//                        friendModels.add(friendModel);
+//                    }
+//                    notifyDataSetChanged();//새로고침
+//                }
+//
+//                @Override
+//                public void onCancelled(@NonNull DatabaseError error) {
+//
+//                }
+//            });
         }
 
         @NonNull
@@ -132,9 +145,7 @@ public class FriendFragment extends Fragment {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Intent intent = new Intent(view.getContext(), MessageActivity.class);
-                    intent.putExtra("destinationUid",friendModels.get(position).friendUid);
-                    startActivity(intent);
+
                 }
             });
         }

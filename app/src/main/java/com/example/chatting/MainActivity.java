@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     void passPushTokenToServer(){
 
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
         String token = FirebaseInstanceId.getInstance().getToken();
         Map<String,Object> map = new HashMap<>();
         map.put("pushToken",token);
