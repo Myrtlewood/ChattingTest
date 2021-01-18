@@ -44,7 +44,6 @@ public class ChatFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_chat,container,false);
-
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.chatfragment_recyclerview);
         recyclerView.setAdapter(new ChatRecyclerViewAdapter());
         recyclerView.setLayoutManager(new LinearLayoutManager(inflater.getContext()));
@@ -65,7 +64,7 @@ public class ChatFragment extends Fragment {
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     chatModels.clear();
                     for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-
+                        //채팅방의 유저가 내가 속해있는
                         if(snapshot.getValue(ChatModel.class).users.containsKey(myUid)) {
                             chatModels.add(snapshot.getValue(ChatModel.class));
                             keys.add(snapshot.getKey());
@@ -87,6 +86,7 @@ public class ChatFragment extends Fragment {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_chat,parent,false);
             return new CustomViewHolder(view);
         }
+
 
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {

@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "1006050842524",
+    "firebase_url": "https://chatting11-e3c3f-default-rtdb.firebaseio.com",
     "project_id": "chatting11-e3c3f",
     "storage_bucket": "chatting11-e3c3f.appspot.com"
   },
@@ -13,6 +14,14 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "1006050842524-i2e7rcjcifgdtpje7mtp6k19g0l5bama.apps.googleusercontent.com",
+          "client_type": 3,
+          "android_info": {
+            "package_name": "com.example.chatting",
+            "certificate_hash": "04d08a8e089f68fc4275341f8f4f4855358286c0"
+          }
+        },
         {
           "client_id": "1006050842524-crigghraehqsutbqp7tquvfob6ervmn8.apps.googleusercontent.com",
           "client_type": 3

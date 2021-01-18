@@ -1,9 +1,5 @@
 package com.example.chatting;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
@@ -14,7 +10,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.chatting.model.UserModel;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -74,16 +72,15 @@ public class SignupActivity extends AppCompatActivity {
                         .addOnCompleteListener(SignupActivity.this, new OnCompleteListener<AuthResult>() {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
-                                final String uid = task.getResult().getUser().getUid();//회원 일련번호
+                                final String uid = task.getResult().getUser().getUid();
                                 UserProfileChangeRequest userProfileChangeRequest = new UserProfileChangeRequest.Builder().setDisplayName(name.getText().toString()).build();
                                 task.getResult().getUser().updateProfile(userProfileChangeRequest);
-
                                 FirebaseStorage.getInstance().getReference().child("userImages").child(uid).putFile(imageUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                                     @Override
                                     public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
                                         Task<Uri> imageUrl = task.getResult().getStorage().getDownloadUrl();
                                         if(imageUrl!=null) {
-                                            while (!imageUrl.isComplete()) ;
+                                            while (!imageUrl.isComplete());
                                             UserModel userModel = new UserModel();
                                             userModel.userName = name.getText().toString();
                                             userModel.profileImageUrl = imageUrl.getResult().toString();

@@ -49,7 +49,7 @@ Button button;
             @Override
             public void onClick(View view) {
                 String myUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                chatModel.users.put(myUid,true);
+                chatModel.users.put(myUid,myUid);
                 FirebaseDatabase.getInstance().getReference().child("chatrooms").push().setValue(chatModel);
                 Intent intent = new Intent(view.getContext(), MainActivity.class);
                 startActivity(intent);
@@ -141,7 +141,7 @@ Button button;
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     if(isChecked){//체크된상태
-                        chatModel.users.put(friendModels.get(position).friendUid,true);
+                        chatModel.users.put(friendModels.get(position).friendUid,friendModels.get(position).friendUid);
                     }
                     else{//체크 취소 상태
                         chatModel.users.remove(friendModels.get(position));

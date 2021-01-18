@@ -83,8 +83,8 @@ public class MessageActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 ChatModel chatModel = new ChatModel();
-                chatModel.users.put(uid,true);
-                chatModel.users.put(destinationUid,true);
+                chatModel.users.put(uid,uid);
+                chatModel.users.put(destinationUid,destinationUid);
 
 //push 랜덤방이름 생성
                 if(chatRoomUid == null){
